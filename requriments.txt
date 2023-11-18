@@ -1,2 +1,3 @@
 pip install -q tensorflow-recommenders
 pip install -q --upgrade tensorflow-datasets
+pip install lightfm-dataset-helper
