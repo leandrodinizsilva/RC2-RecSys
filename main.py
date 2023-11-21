@@ -71,7 +71,7 @@ tuple_interactions = list(tuple_interactions.to_records(index=False))
 tuple_content = Content[["ItemId", "Metascore", "imdbRating", "Genre", "Director", "FirstRatingValue", "QtdAwards"]]
 tuple_content = [(row['ItemId'], [row["Metascore"],  row["imdbRating"], row["Genre"], row["Director"], row["FirstRatingValue"], row["QtdAwards"]]) for _, row in tuple_content.iterrows()]
 
-item_feat = dataset.build_item_features(tuple_content)
+item_feat = dataset.build_item_features(tuple_content, normalize =True)
 
 model = LightFM(loss='warp',
                 learning_rate=0.005,
@@ -94,13 +94,12 @@ def getItemModelId(userId, Target):
     return data
 
 targets = Target['UserId'].unique()
-csv_filename = 'output.csv'
-with open(csv_filename, 'w+') as csv_file:
-    csv_file.write('UserId,ItemId\n')
-    for target in targets:
-        customer_id = ratings_dict.get(target) - 1
-        item_ids_cont = getItemModelId(target, Target)
-        predictions = model.predict(customer_id, item_ids=item_ids_cont,item_features=item_feat, num_threads=4)
-        top_items = sorted(zip(item_ids_cont, predictions), key=lambda x: -x[1])[:100]
-        for rec in top_items:
-            csv_file.write(target +','+content_id[rec[0]]+ '\n')
+
+print('UserId,ItemId')
+for target in targets:
+    customer_id = ratings_dict.get(target) - 1
+    item_ids_cont = getItemModelId(target, Target)
+    predictions = model.predict(customer_id, item_ids=item_ids_cont,item_features=item_feat, num_threads=4)
+    top_items = sorted(zip(item_ids_cont, predictions), key=lambda x: -x[1])[:100]
+    for rec in top_items:
+        print(f'{target},{content_id[rec[0]]}')
